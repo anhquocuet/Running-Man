@@ -6,13 +6,20 @@
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
+#include "BaseObject.h"
+#include "ImpTimer.h"
+
+static SDL_Window* g_window = NULL;
+static SDL_Renderer* g_screen = NULL;
+static SDL_Event g_event;
+
 
 //    Screen
 
 const int SCREEN_BPP = 32;
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 640;
-const int FRAME_PER_SECOND = 26;
+const int FRAME_PER_SECOND = 40;
 
 
 #define TILE_SIZE 64
@@ -42,10 +49,12 @@ typedef struct
     char* file_name_;
 }Map;
 
-// namespace SDLCommonFunc{
-//     int getBestPoint();
-//     void fixBestPoint(int newPoint);
-// }
+namespace SDLCommonFunc
+{
+    bool CheckCollision(const SDL_Rect& object1, const SDL_Rect& object2);
+    void fixBestPoint(int newPoint);
+    int getBestPoint();
+}
 
 
 #endif 

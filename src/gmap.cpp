@@ -100,7 +100,7 @@
                         tile_mat[val].Render(screen);
                     }
                     map_x++;
-                }
+                }   
             map_y++;   
             }
         }

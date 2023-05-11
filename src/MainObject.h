@@ -4,12 +4,13 @@
 
 #include "CommonFunc.h"
 #include "BaseObject.h"
-#include "BulletObject.h"
 
 #define GRAVITY_SPEED 0.8
 #define MAX_FALL_SPEED 10
 #define MOVE_SPEED 8
 #define NHAY 18
+
+#define PLAYER_FRAME_NUM 11
 
 
 class MainObject : public BaseObject
@@ -31,19 +32,22 @@ class MainObject : public BaseObject
         void DoPlayer(Map& map_data);
         void CheckVacham(Map& map_data);
         void SetMapXY( const int map_x, const int map_y) {map_x_ = map_x; map_y_ = map_y; }
-        void CenterEntityOnMap(Map& map_data);
+        void GhimMap(Map& map_data);
 
-        void set_bullet_list(std::vector<BulletObject*> bullet_list)
-        {
-            p_bullet_list_ = bullet_list;
-        }
-
-        std::vector<BulletObject*> get_bullet_list() const { return p_bullet_list_;}
-        void HandleBullet(SDL_Renderer* des);
+        SDL_Rect GetRectFrame();
         void IncreaseMoney();
-        
+
+        void set_come_back_time(const int& cb_time) { come_back_time = cb_time;}
+        int GetMoneyCount() const { return money_count;}
+
+        bool get_dead() {return dead;}
+        void set_dead(bool x) {dead = x;}
+
+        bool get_win() {return win;}
+        bool set_win(bool x) {win = x;}
+
+        void reset_game();
     private:
-        std::vector<BulletObject*> p_bullet_list_; // danh sach đạn
         float x_val_;
         float y_val_;
 
@@ -53,7 +57,7 @@ class MainObject : public BaseObject
         int width_frame_;
         int height_frame_;
 
-        SDL_Rect frame_clip_[8];
+        SDL_Rect frame_clip_[PLAYER_FRAME_NUM];
         Input input_type_;                // save trang thai nhan vat: up down right left
         int frame_;
         int status_; // cho biet nhan vat dang right hay left
@@ -63,6 +67,9 @@ class MainObject : public BaseObject
 
         int come_back_time;
         int money_count;
+
+        bool dead;
+        bool win;
 };
 
 #endif

@@ -20,6 +20,8 @@ MainObject::MainObject()
     map_y_ = 0;
     come_back_time = 0;
     money_count = 0;
+    dead = false;
+    win = NULL;
 
 } 
 
@@ -34,18 +36,29 @@ bool MainObject::LoadImg(std::string path, SDL_Renderer* screen)
 
     if(ret == true) 
     {
-        width_frame_ = rect_.w/8;
+        width_frame_ = rect_.w/PLAYER_FRAME_NUM;
         height_frame_ = rect_.h;
     }
 
     return ret;
 }
 
+SDL_Rect MainObject::GetRectFrame()
+ {
+    SDL_Rect rect;
+    rect.x = rect_.x;
+    rect.y = rect_.y;
+    rect.w = width_frame_;
+    rect.h = height_frame_;
+
+    return rect;
+ }
+
 void MainObject::set_clips()
 {
     if (width_frame_ > 0 && height_frame_ > 0)
     {
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < PLAYER_FRAME_NUM; i++)
         {
             frame_clip_[i].x = i*width_frame_;
             frame_clip_[i].y = 0;
@@ -61,22 +74,22 @@ void MainObject::Show(SDL_Renderer* des)
     {
         if (status_ == WALK_LEFT)
         {
-            LoadImg("image//player_left.png", des);
+            LoadImg("image//left.png", des);
         }
         else 
         {
-            LoadImg("image//player_right.png", des);
+            LoadImg("image//right.png", des);
         }
     }
     else
     {
         if (status_ == WALK_LEFT)
         {
-            LoadImg("image//jum_left.png", des);
+            LoadImg("image//jumpleft.png", des);
         }
         else
         {
-            LoadImg("image//jum_right.png", des);
+            LoadImg("image//jumpright.png", des);
         }
     }
     
@@ -121,11 +134,11 @@ void MainObject::HandelInputAction(SDL_Event events, SDL_Renderer* screen)
 
                     if(on_ground_ == true)
                     {
-                        LoadImg("image//player_right.png", screen);
+                        LoadImg("image//right.png", screen);
                     }
                     else 
                     {
-                        LoadImg("image//jum_right.png", screen);
+                        LoadImg("image//jumpright.png", screen);
                     }
                 }
                 break;
@@ -137,41 +150,19 @@ void MainObject::HandelInputAction(SDL_Event events, SDL_Renderer* screen)
 
                     if(on_ground_ == true)
                     {
-                        LoadImg("image//player_left.png", screen);
+                        LoadImg("image//left.png", screen);
                     }
                     else 
                     {
-                        LoadImg("image//jum_left.png", screen);
+                        LoadImg("image//jumpleft.png", screen);
                     }
                 }
                 break;
-            // case SDLK_SPACE:
-            //     {
-            //         input_type_.jump_ = 1;
-            //     }
-            // case SDLK_d:
-            //     {
-            //         BulletObject* p_bullet = new BulletObject();
-            //         p_bullet->LoadImg("image//player_bullet.png", screen);
-
-            //         if(status_ == WALK_LEFT)
-            //         {
-            //             p_bullet->set_bullet_dir(BulletObject::DIR_LEFT);
-            //             p_bullet->SetRect(this->rect_.x + width_frame_ - 20, rect_.y + height_frame_ * 0.25);
-            //         }
-                    
-            //         else if(status_ == WALK_RIGHT)
-            //         {
-            //             p_bullet->set_bullet_dir(BulletObject::DIR_RIGHT);
-            //             p_bullet->SetRect(this->rect_.x + width_frame_ - 20, rect_.y + height_frame_ * 0.25);
-            //         }
-
-            //         p_bullet->set_x_val(20); // 20 la toc do dan ban
-            //         p_bullet->set_is_move(true);
-
-            //         p_bullet_list_.push_back(p_bullet);
-
-            //     }
+            case SDLK_SPACE:
+                {
+                    input_type_.jump_ = 1;
+                }
+            
         }
     }
     else if(events.type == SDL_KEYUP)
@@ -191,59 +182,6 @@ void MainObject::HandelInputAction(SDL_Event events, SDL_Renderer* screen)
         }
     }
 
-    if(events.type == SDL_MOUSEBUTTONDOWN)
-    {
-        if (events.button.button == SDL_BUTTON_RIGHT)
-        {
-            input_type_.jump_ = 1;
-        }
-        else if (events.button.button == SDL_BUTTON_LEFT)
-        {
-            BulletObject* p_bullet = new BulletObject();
-            p_bullet->LoadImg("image//player_bullet.png",screen);
-
-            if(status_ == WALK_LEFT)
-            {
-                p_bullet->set_bullet_dir(BulletObject::DIR_LEFT);
-                p_bullet->SetRect(this->rect_.x + width_frame_ - 20, rect_.y + height_frame_ * 0.25);
-            }
-                    
-            else if(status_ == WALK_RIGHT)
-            {
-                p_bullet->set_bullet_dir(BulletObject::DIR_RIGHT);
-                p_bullet->SetRect(this->rect_.x + width_frame_ - 20, rect_.y + height_frame_ * 0.25);
-            }
-
-                p_bullet->set_x_val(20); // 20 la toc do dan ban
-                p_bullet->set_is_move(true);
-
-                p_bullet_list_.push_back(p_bullet);
-
-        }
-    }
-
-}
-
-void MainObject::HandleBullet(SDL_Renderer* des)
-{
-    for(int i = 0; i < p_bullet_list_.size(); i++)
-    {
-        BulletObject* p_bullet = p_bullet_list_.at(i);
-        if(p_bullet != NULL)
-        {
-            if(p_bullet->get_is_move() == true)
-            {
-                p_bullet->HandleMove(SCREEN_WIDTH);
-                p_bullet->Render(des);
-            }
-            else 
-            {
-                p_bullet_list_.erase(p_bullet_list_.begin() + i);
-                delete p_bullet;
-                p_bullet = NULL;
-            }
-        }
-    }
 }
 
 void MainObject::DoPlayer(Map& map_data)
@@ -279,24 +217,26 @@ void MainObject::DoPlayer(Map& map_data)
     }
 
     CheckVacham(map_data);
-    CenterEntityOnMap(map_data);
+    GhimMap(map_data);
     }
 
     if(come_back_time > 0)
     {
         come_back_time--;
+
         if(come_back_time == 0)
         {   
             on_ground_ = false; // de khi die thi player se roi trang thai jump
-            x_pos_ -= 256; // lui 4 o
+            x_pos_ -= 128;
             y_pos_ = 0;
             x_val_ = 0;
             y_val_ = 0;
         }
+                   
     }
 }
 
-void MainObject::CenterEntityOnMap(Map& map_data)
+void MainObject::GhimMap(Map& map_data)
 {
     map_data.start_x_ = x_pos_ - (SCREEN_WIDTH/2);
     if(map_data.start_x_ < 0)
@@ -308,14 +248,7 @@ void MainObject::CenterEntityOnMap(Map& map_data)
         map_data.start_x_ = map_data.max_x_ - SCREEN_WIDTH;
     }
 
-    map_data.start_y_ = y_pos_ - SCREEN_HEIGHT/2 ;
-    if(map_data.start_y_ < 0) {
-        map_data.start_y_ = 0;
-    }
-    else if(map_data.start_y_ + SCREEN_HEIGHT >= map_data.max_y_)
-    {
-        map_data.start_y_ = map_data.max_y_ - SCREEN_HEIGHT;
-    }
+
 }
 
 void MainObject::CheckVacham(Map& map_data)
@@ -461,13 +394,34 @@ void MainObject::CheckVacham(Map& map_data)
         x_pos_ = map_data.max_x_ - width_frame_ - 1;
     }
 
-    if(y_pos_ > map_data.max_y_)
+    //endgame
+    if(y_pos_ > SCREEN_HEIGHT)
     {
-        come_back_time = 30;
+        dead =true;
+    }
+
+    if(x_pos_ > 400 * 64 - 64)
+    {
+        set_win(true);
     }
  }
 
- void MainObject::IncreaseMoney()
- {
+void MainObject::IncreaseMoney()
+{
     money_count++;
- }
+}
+
+void MainObject::reset_game()
+{
+    frame_ = 0;
+    x_pos_ = 0;
+    y_pos_ = 0;
+    x_val_ = 0;
+    y_val_ = 0;
+    money_count = 0;
+}
+
+
+ 
+
+ 

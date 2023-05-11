@@ -36,7 +36,7 @@ bool BaseObject::LoadImg(std::string path, SDL_Renderer* screen)
         SDL_FreeSurface(load_surface);
 
     }
-
+    //return success
     p_object_ = new_texture;
 
      return p_object_ != NULL;

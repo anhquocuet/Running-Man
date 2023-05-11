@@ -7,8 +7,8 @@
 
 #define THREAT_FRAME_NUM 8
 #define THREAT_GRAVITY_SPEED 0.8
-#define THREAT_MAX_FALL_SPEED 10
-#define THREAT_SPEED 3
+#define THREAT_MAX_FALL_SPEED 6
+#define THREAT_SPEED 1
 
 class ThreatsObject : public BaseObject
 {
@@ -45,6 +45,8 @@ class ThreatsObject : public BaseObject
         void SetAnimationPos(const int& pos_a, const int& pos_b) {animation_a_ = pos_a; animation_b_ = pos_b;}
         void set_input_left(const int& ipleft) { input_type_.left_ = ipleft;}
         void ImpMoveType(SDL_Renderer* screen);
+
+        SDL_Rect GetRectFrame();
 
     private:
         float x_pos_;
